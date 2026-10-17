@@ -1,5 +1,5 @@
-import React from "react";
-import { ArrowLeft, ShoppingBag, Home, Search } from "lucide-react";
+
+import { ShoppingBag, Home,  } from "lucide-react";
 
 const NotFoundContent = () => {
     return (
@@ -10,7 +10,7 @@ const NotFoundContent = () => {
 
             {/* Glowing 404 Large Text */}
             <div className="relative mb-6">
-                <span className="text-8xl sm:text-9xl font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-b from-[#10B981] via-[#0d2a1f] to-[#121614] select-none">
+                <span className="text-8xl sm:text-9xl font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-b from-[#15eca4] via-[#0c3b29] to-[#121614] select-none">
                     404
                 </span>
                 <span className="absolute inset-0 text-8xl sm:text-9xl font-black tracking-widest text-[#10B981]/20 blur-xl select-none">
@@ -19,7 +19,7 @@ const NotFoundContent = () => {
             </div>
 
             {/* Badge */}
-            <span className="text-xs font-semibold uppercase tracking-widest text-[#10B981] bg-[#10B981]/10 border border-[#10B981]/20 px-3.5 py-1.5 rounded-full mb-4">
+            <span className="text-xs font-semibold uppercase tracking-widest text-[#0db37b] bg-[#10B981]/10 border border-[#10B981]/20 px-3.5 py-1.5 rounded-full mb-4">
                 Page Not Found
             </span>
 
