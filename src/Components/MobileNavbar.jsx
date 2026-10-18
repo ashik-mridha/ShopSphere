@@ -4,8 +4,7 @@ import { Search, Heart, UserRound, Sun, Moon } from "lucide-react";
 const MobileNavbar = ({
     isSearchOpen,
     setIsSearchOpen,
-    searchQuery,
-    setSearchQuery,
+    
     theme,
     toggleTheme,
 }) => {

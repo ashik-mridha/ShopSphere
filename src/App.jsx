@@ -1,8 +1,20 @@
-
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+
+// Layouts
+import MainLayout from "./layouts/MainLayout";
 import DashboardLayout from "./layouts/DashboardLayout";
+
+// Auth Pages
+import LoginPage from "./auth/login/page";
+import RegisterPage from "./auth/register/page";
+
+// Dashboard Pages
 import AdminDashboard from "./pages/dashboard/AdminDashboard";
 import UserDashboard from "./pages/dashboard/UserDashboard";
+
+// Homepage
+import Homepage from "./Components/Homepage"
+
 
 function Placeholder({ title }) {
   return (
@@ -16,38 +28,32 @@ function Placeholder({ title }) {
 }
 
 export default function App() {
-  // TEMPORARY UI DEMO ONLY.
-  // Do not use a hardcoded role to authorize real users.
-  const demoRole = "user";
-
   return (
     <BrowserRouter>
       <Routes>
-        <Route
-          path="/admin/dashboard"
-          element={
-            <DashboardLayout role="admin">
-              <AdminDashboard />
-            </DashboardLayout>
-          }
-        >
-          <Route index element={<AdminDashboard />} />
+        {/* Public Routes */}
+        <Route element={<MainLayout />}>
+          <Route path="/" element={<Homepage />} />
+          <Route path="/products" element={<Placeholder title="Products" />} />
+          <Route path="/cart" element={<Placeholder title="Cart" />} />
+          <Route path="/wishlist" element={<Placeholder title="Wishlist" />} />
         </Route>
 
-        <Route
-          path="/user"
-          element={<DashboardLayout role={demoRole} />}
-        >
-          <Route
-            path="dashboard"
-            element={<UserDashboard />}
-          />
+        {/* Auth Routes (Navbar/Footer ছাড়া) */}
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+
+        {/* User Dashboard */}
+        <Route path="/user" element={<DashboardLayout role="user" />}>
+          <Route index element={<Navigate to="dashboard" replace />} />
+          <Route path="dashboard" element={<UserDashboard />} />
           <Route path="orders" element={<Placeholder title="My Orders" />} />
           <Route path="wishlist" element={<Placeholder title="My Wishlist" />} />
           <Route path="profile" element={<Placeholder title="My Profile" />} />
           <Route path="settings" element={<Placeholder title="Settings" />} />
         </Route>
 
+        {/* Admin Dashboard */}
         <Route path="/admin" element={<DashboardLayout role="admin" />}>
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<AdminDashboard />} />
@@ -57,7 +63,6 @@ export default function App() {
           <Route path="settings" element={<Placeholder title="Admin Settings" />} />
         </Route>
 
-        <Route path="/" element={<Navigate to="/user/dashboard" replace />} />
         <Route path="*" element={<Placeholder title="404 - Page Not Found" />} />
       </Routes>
     </BrowserRouter>

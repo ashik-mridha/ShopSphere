@@ -1,5 +1,7 @@
-
-import { Search, Heart, ShoppingCart, UserRound, ChevronDown, Sun, Moon } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { Search, Heart, ShoppingCart, UserRound, ChevronDown, Sun, Moon, LayoutDashboard, LogOut } from "lucide-react";
+import { authClient } from "../lib/auth-client";
+import { useNavigate } from "react-router-dom";
 
 const DesktopNavbar = ({
     navLinks,
@@ -13,9 +15,37 @@ const DesktopNavbar = ({
     theme,
     toggleTheme,
 }) => {
+    // সব হুক এবং স্টেট এখন কম্পোনেন্টের ভেতরে সঠিকভাবে রাখা হয়েছে
+    const { data: session, isPending } = authClient.useSession();
+    const [profileOpen, setProfileOpen] = useState(false);
+    const profileRef = useRef(null);
+    const navigate = useNavigate();
+
+    // Outside click এ dropdown close করার জন্য
+    useEffect(() => {
+        function handleClickOutside(event) {
+            if (profileRef.current && !profileRef.current.contains(event.target)) {
+                setProfileOpen(false);
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
+    const handleLogout = async () => {
+        await authClient.signOut({
+            fetchOptions: {
+                onSuccess: () => {
+                    setProfileOpen(false);
+                    navigate("/");
+                },
+            },
+        });
+    };
+
     return (
         <div className="hidden md:flex items-center justify-between w-full">
-            
+
             <a
                 href="/"
                 aria-label="ShopSphere home"
@@ -55,8 +85,7 @@ const DesktopNavbar = ({
                             {link.dropdown && (
                                 <ChevronDown
                                     size={15}
-                                    className={`transition-transform duration-200 ${activeDropdown === link.name ? "rotate-180 text-[#10B981]" : ""
-                                        }`}
+                                    className={`transition-transform duration-200 ${activeDropdown === link.name ? "rotate-180 text-[#10B981]" : ""}`}
                                 />
                             )}
                             <span className="absolute bottom-0 left-0 h-[2px] w-0 bg-[#10B981] transition-all duration-300 ease-out group-hover:w-full"></span>
@@ -150,17 +179,73 @@ const DesktopNavbar = ({
                     </span>
                 </a>
 
-                {/* Profile */}
-                <a
-                    href="/profile"
-                    aria-label="My profile"
-                    className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-[#22332a] bg-[#182620] text-gray-300 transition-all duration-200 hover:border-[#10B981]"
-                >
-                    <UserRound size={20} strokeWidth={1.8} />
-                </a>
+                {/* Profile Dropdown */}
+                <div className="relative" ref={profileRef}>
+                    {isPending ? (
+                        <div className="h-10 w-10 rounded-full bg-[#182620] animate-pulse" />
+                    ) : session ? (
+                        <>
+                            <button
+                                onClick={() => setProfileOpen(!profileOpen)}
+                                className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-[#22332a] bg-[#182620] text-gray-300 hover:border-[#10B981] transition"
+                            >
+                                {session.user.image ? (
+                                    <img
+                                        src={session.user.image}
+                                        alt="avatar"
+                                        className="h-full w-full object-cover"
+                                    />
+                                ) : (
+                                    <span className="font-semibold text-[#10B981]">
+                                        {session.user.name?.[0]?.toUpperCase() || "U"}
+                                    </span>
+                                )}
+                            </button>
+
+                            {profileOpen && (
+                                <div className="absolute right-0 top-full mt-2 w-52 rounded-xl border border-[#22332a] bg-[#0d1411]/95 py-2 shadow-2xl backdrop-blur-md z-50">
+                                    <div className="px-4 py-2 border-b border-[#22332a]">
+                                        <p className="text-sm font-medium text-white truncate">
+                                            {session.user.name}
+                                        </p>
+                                        <p className="text-xs text-gray-400 truncate">
+                                            {session.user.email}
+                                        </p>
+                                    </div>
+
+                                    <button
+                                        onClick={() => {
+                                            setProfileOpen(false);
+                                            navigate("/user/dashboard");
+                                        }}
+                                        className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-gray-200 hover:bg-[#15241d] hover:text-[#10B981] transition"
+                                    >
+                                        <LayoutDashboard size={17} />
+                                        Dashboard
+                                    </button>
+
+                                    <button
+                                        onClick={handleLogout}
+                                        className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-red-400 hover:bg-red-500/10 transition"
+                                    >
+                                        <LogOut size={17} />
+                                        Logout
+                                    </button>
+                                </div>
+                            )}
+                        </>
+                    ) : (
+                        <a
+                            href="/login"
+                            className="flex h-10 w-10 items-center justify-center rounded-full border border-[#22332a] bg-[#182620] text-gray-300 hover:border-[#10B981] transition"
+                        >
+                            <UserRound size={20} />
+                        </a>
+                    )}
+                </div>
             </div>
         </div>
     );
 };
 
-export default DesktopNavbar;
+export default DesktopNavbar;   
