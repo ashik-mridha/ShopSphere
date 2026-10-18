@@ -20,7 +20,7 @@ export default function RegisterPage() {
             name,
             email,
             password,
-            callbackURL: "/user/dashboard",
+            callbackURL: `${window.location.origin}/user/dashboard`,
         });
 
         if (error) {
@@ -34,7 +34,7 @@ export default function RegisterPage() {
     const handleGoogleLogin = async () => {
         await authClient.signIn.social({
             provider: "google",
-            callbackURL: "/user/dashboard",
+            callbackURL: `${window.location.origin}/user/dashboard`,
         });
     };
 
@@ -49,7 +49,8 @@ export default function RegisterPage() {
                 <div className="bg-[#121816] border border-[#22332a] rounded-2xl p-8 shadow-xl">
                     <button
                         onClick={handleGoogleLogin}
-                        className="w-full flex items-center justify-center gap-3 bg-white text-gray-800 font-medium py-3 rounded-xl hover:bg-gray-100 transition mb-6"
+                        type="button"
+                        className="w-full flex items-center justify-center gap-3 bg-white text-gray-800 font-medium py-3 rounded-xl hover:bg-gray-100 transition mb-6 cursor-pointer"
                     >
                         <svg className="w-5 h-5" viewBox="0 0 24 24">
                             <path
@@ -152,7 +153,7 @@ export default function RegisterPage() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full bg-[#10B981] hover:bg-[#0d9668] text-white font-semibold py-3 rounded-xl transition flex items-center justify-center gap-2 disabled:opacity-60"
+                            className="w-full bg-[#10B981] hover:bg-[#0d9668] text-white font-semibold py-3 rounded-xl transition flex items-center justify-center gap-2 disabled:opacity-60 cursor-pointer"
                         >
                             {loading ? (
                                 <Loader2 className="animate-spin" size={20} />
