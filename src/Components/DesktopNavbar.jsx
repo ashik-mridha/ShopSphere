@@ -15,7 +15,6 @@ const DesktopNavbar = ({
     theme,
     toggleTheme,
 }) => {
-    // সব হুক এবং স্টেট এখন কম্পোনেন্টের ভেতরে সঠিকভাবে রাখা হয়েছে
     const { data: session, isPending } = authClient.useSession();
     const [profileOpen, setProfileOpen] = useState(false);
     const profileRef = useRef(null);
@@ -42,6 +41,10 @@ const DesktopNavbar = ({
             },
         });
     };
+
+    // Role অনুযায়ী Dashboard Path নির্ধারণ
+    const userRole = session?.user?.role || "user";
+    const dashboardPath = userRole === "admin" ? "/admin/dashboard" : "/user/dashboard";
 
     return (
         <div className="hidden md:flex items-center justify-between w-full">
@@ -187,7 +190,7 @@ const DesktopNavbar = ({
                         <>
                             <button
                                 onClick={() => setProfileOpen(!profileOpen)}
-                                className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-[#22332a] bg-[#182620] text-gray-300 hover:border-[#10B981] transition"
+                                className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-[#22332a] bg-[#182620] text-gray-300 hover:border-[#10B981] transition cursor-pointer"
                             >
                                 {session.user.image ? (
                                     <img
@@ -208,17 +211,18 @@ const DesktopNavbar = ({
                                         <p className="text-sm font-medium text-white truncate">
                                             {session.user.name}
                                         </p>
-                                        <p className="text-xs text-gray-400 truncate">
-                                            {session.user.email}
+                                        <p className="text-xs text-gray-400 truncate capitalize">
+                                            {userRole} • {session.user.email}
                                         </p>
                                     </div>
 
+                                    {/* Role Based Dynamic Dashboard Button */}
                                     <button
                                         onClick={() => {
                                             setProfileOpen(false);
-                                            navigate("/user/dashboard");
+                                            navigate(dashboardPath);
                                         }}
-                                        className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-gray-200 hover:bg-[#15241d] hover:text-[#10B981] transition"
+                                        className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-gray-200 hover:bg-[#15241d] hover:text-[#10B981] transition cursor-pointer"
                                     >
                                         <LayoutDashboard size={17} />
                                         Dashboard
@@ -226,7 +230,7 @@ const DesktopNavbar = ({
 
                                     <button
                                         onClick={handleLogout}
-                                        className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-red-400 hover:bg-red-500/10 transition"
+                                        className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-red-400 hover:bg-red-500/10 transition cursor-pointer"
                                     >
                                         <LogOut size={17} />
                                         Logout
@@ -248,4 +252,4 @@ const DesktopNavbar = ({
     );
 };
 
-export default DesktopNavbar;   
+export default DesktopNavbar;

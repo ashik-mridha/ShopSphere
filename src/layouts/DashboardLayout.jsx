@@ -1,4 +1,3 @@
-
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import {
     LayoutDashboard,
@@ -33,12 +32,10 @@ export default function DashboardLayout({ role = "user" }) {
             { name: "Overview", path: "/user/dashboard", icon: LayoutDashboard },
             { name: "My Orders", path: "/user/orders", icon: ShoppingBag },
             { name: "Wishlist", path: "/user/wishlist", icon: Heart },
-            { name: "My Profile", path: "/user/profile", icon: UserRound },
-            { name: "Settings", path: "/user/settings", icon: Settings },
+            { name: "My Profile", path: "/user/profile", icon: UserRound }
         ];
 
     function handleLogout() {
-        // Connect this to your real logout API/session later.
         navigate("/login");
     }
 
@@ -85,8 +82,8 @@ export default function DashboardLayout({ role = "user" }) {
                     </p>
                     <span
                         className={`mt-2 inline-block rounded-full px-3 py-1 text-xs font-medium ${isAdmin
-                                ? "bg-purple-100 text-purple-700"
-                                : "bg-emerald-100 text-emerald-700"
+                            ? "bg-purple-100 text-purple-700"
+                            : "bg-emerald-100 text-emerald-700"
                             }`}
                     >
                         {isAdmin ? "Admin Panel" : "Customer Panel"}

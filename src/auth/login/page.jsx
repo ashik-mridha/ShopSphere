@@ -15,23 +15,39 @@ export default function LoginPage() {
         setLoading(true);
         setError("");
 
-        const { error } = await authClient.signIn.email({
-            email,
-            password,
-            callbackURL: `${window.location.origin}/user/dashboard`,
-        });
+        try {
+            const response = await authClient.signIn.email({
+                email,
+                password,
+            });
 
-        if (error) {
-            setError(error.message || "Login failed");
+            const { data, error: signInError } = response;
+
+            if (signInError) {
+                setError(signInError.message || "Login failed");
+                setLoading(false);
+                return;
+            }
+
+            // ইউজারের রোল চেক করা (আপনার ডাটাবেজ বা user object-এ রোল যেভাবে সেভ আছে, যেমন: role বা role.toLowerCase())
+            const userRole = data?.user?.role || data?.role;
+
+            if (userRole === "admin") {
+                navigate("/admin/settings"); // অ্যাডমিন হলে সেটিংস বা ড্যাশবোর্ডে যাবে
+            } else {
+                navigate("/user/dashboard"); // সাধারণ ইউজার হলে ইউজার ড্যাশবোর্ডে যাবে
+            }
+        } catch (err) {
+            setError("Something went wrong. Please try again.");
             setLoading(false);
-        } else {
-            navigate("/user/dashboard");
         }
     };
 
     const handleGoogleLogin = async () => {
         await authClient.signIn.social({
             provider: "google",
+            // Google Login-এর ক্ষেত্রে callbackURL-এর মাধ্যমেও হ্যান্ডেল করতে পারেন 
+            // অথবা auth state থেকে রোল চেক করে রিডায়রেক্ট করতে পারেন
             callbackURL: `${window.location.origin}/user/dashboard`,
         });
     };
