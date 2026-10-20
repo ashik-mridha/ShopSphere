@@ -1,118 +1,271 @@
-import  { useState, useEffect } from "react";
+
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { Plus, Package } from "lucide-react";
+import toast, { Toaster } from "react-hot-toast";
+
 import AddProductCard from "./AddProductCard";
 import ManageProductsTable from "./ManageProductsTable";
+import ProductSearchFilter from "./ProductSearchFilter";
+import ProductPagination from "./ProductPagination";
+
+const ITEMS_PER_PAGE = 5;
+const SERVER_URL = "http://localhost:5000";
+
+const EMPTY_PRODUCT = {
+    title: "",
+    price: "",
+    category: "",
+    image: "",
+    description: "",
+};
 
 export default function AdminSettings() {
     const [products, setProducts] = useState([]);
     const [showAddCard, setShowAddCard] = useState(false);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
 
-    // Form State
-    const [newProduct, setNewProduct] = useState({
-        title: "",
-        price: "",
-        category: "",
-        image: "",
-        description: "",
-    });
+    const [searchQuery, setSearchQuery] = useState("");
+    const [selectedCategory, setSelectedCategory] = useState("all");
+    const [currentPage, setCurrentPage] = useState(1);
 
-    // Price Edit State
+    const [newProduct, setNewProduct] = useState(EMPTY_PRODUCT);
     const [editingId, setEditingId] = useState(null);
     const [editedPrice, setEditedPrice] = useState("");
 
-    const SERVER_URL = "http://localhost:5000";
-
-    // Fetch All Products
-    const fetchProducts = async () => {
+    // Fetch products from backend
+    const fetchProducts = useCallback(async () => {
         try {
             setLoading(true);
+
             const res = await fetch(`${SERVER_URL}/api/products`);
+
+            if (!res.ok) {
+                throw new Error(`Request failed: ${res.status}`);
+            }
+
             const data = await res.json();
+
+            if (!Array.isArray(data)) {
+                throw new Error("Invalid products response from server");
+            }
+
             setProducts(data);
-        } catch (err) {
-            console.error("Failed to fetch products:", err);
+        } catch (error) {
+            console.error("Fetch products error:", error);
+            toast.error("Products load হয়নি। Backend server check করো।");
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
 
     useEffect(() => {
         fetchProducts();
-    }, []);
+    }, [fetchProducts]);
 
-    // 1. Add Product Handler
+    // Add product
     const handleAddProduct = async (e) => {
         e.preventDefault();
+
+        const price = Number(newProduct.price);
+
+        if (
+            !newProduct.title.trim() ||
+            newProduct.price === "" ||
+            !Number.isFinite(price) ||
+            price < 0
+        ) {
+            toast.error("Valid title and price দাও");
+            return;
+        }
+
+        const loadingToast = toast.loading("Adding product...");
+
         try {
             const res = await fetch(`${SERVER_URL}/api/products`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(newProduct),
+                body: JSON.stringify({
+                    ...newProduct,
+                    title: newProduct.title.trim(),
+                    price,
+                }),
             });
 
-            if (res.ok) {
-                setNewProduct({ title: "", price: "", category: "", image: "", description: "" });
-                setShowAddCard(false);
-                fetchProducts();
+            if (!res.ok) {
+                throw new Error(`Add failed: ${res.status}`);
             }
-        } catch (err) {
-            console.error("Error adding product:", err);
+
+            toast.success("Product added successfully!", {
+                id: loadingToast,
+            });
+
+            setNewProduct(EMPTY_PRODUCT);
+            setShowAddCard(false);
+            setCurrentPage(1);
+
+            await fetchProducts();
+        } catch (error) {
+            console.error("Add product error:", error);
+            toast.error("Product add হয়নি। Backend/API check করো।", {
+                id: loadingToast,
+            });
         }
     };
 
-    // 2. Delete Product Handler
+    // Delete product
+
     const handleDeleteProduct = async (id) => {
-        if (!confirm("Are you sure you want to delete this product?")) return;
+        if (!id) {
+            toast.error("Product ID পাওয়া যায়নি!");
+            return;
+        }
+
+        const confirmed = window.confirm(
+            "Are you sure you want to delete this product?"
+        );
+
+        if (!confirmed) return;
+
+        const loadingToast = toast.loading("Deleting product...");
+
         try {
-            const res = await fetch(`${SERVER_URL}/api/products/${id}`, {
-                method: "DELETE",
-            });
-            if (res.ok) {
-                setProducts(products.filter((p) => p._id !== id));
+            const res = await fetch(
+                `http://localhost:5000/api/products/${id}`,
+                {
+                    method: "DELETE",
+                }
+            );
+
+            const data = await res.json().catch(() => ({}));
+
+            if (!res.ok) {
+                throw new Error(data.message || `Delete failed: ${res.status}`);
             }
-        } catch (err) {
-            console.error("Error deleting product:", err);
+
+            setProducts((prev) =>
+                prev.filter((product) => product._id !== id)
+            );
+
+            toast.success("Product deleted successfully!", {
+                id: loadingToast,
+            });
+        } catch (error) {
+            console.error("Delete error:", error);
+
+            toast.error(error.message || "Product delete failed!", {
+                id: loadingToast,
+            });
         }
     };
 
-    // 3. Edit Price Handler
+
+    // Update product price
     const handleUpdatePrice = async (id) => {
+        if (
+            editedPrice === "" ||
+            !Number.isFinite(Number(editedPrice)) ||
+            Number(editedPrice) < 0
+        ) {
+            toast.error("Valid price দাও");
+            return;
+        }
+
+        const loadingToast = toast.loading("Updating price...");
+
         try {
             const res = await fetch(`${SERVER_URL}/api/products/${id}`, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ price: editedPrice }),
+                body: JSON.stringify({ price: Number(editedPrice) }),
             });
 
-            if (res.ok) {
-                setProducts(
-                    products.map((p) => (p._id === id ? { ...p, price: Number(editedPrice) } : p))
-                );
-                setEditingId(null);
-                setEditedPrice("");
+            if (!res.ok) {
+                throw new Error(`Update failed: ${res.status}`);
             }
-        } catch (err) {
-            console.error("Error updating price:", err);
+
+            setProducts((prev) =>
+                prev.map((p) =>
+                    p._id === id
+                        ? { ...p, price: Number(editedPrice) }
+                        : p
+                )
+            );
+
+            setEditingId(null);
+            setEditedPrice("");
+
+            toast.success("Price updated successfully!", {
+                id: loadingToast,
+            });
+        } catch (error) {
+            console.error("Update price error:", error);
+            toast.error("Price update হয়নি।", {
+                id: loadingToast,
+            });
         }
     };
 
+    // Search and category filter
+    const filteredProducts = useMemo(() => {
+        const query = searchQuery.trim().toLowerCase();
+
+        return products.filter((item) => {
+            const matchesCategory =
+                selectedCategory === "all" ||
+                item.category?.toLowerCase() ===
+                selectedCategory.toLowerCase();
+
+            const matchesSearch =
+                item.title?.toLowerCase().includes(query);
+
+            return matchesCategory && matchesSearch;
+        });
+    }, [products, searchQuery, selectedCategory]);
+
+    // Reset page when search/filter changes
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchQuery, selectedCategory]);
+
+    const totalPages = Math.max(
+        1,
+        Math.ceil(filteredProducts.length / ITEMS_PER_PAGE)
+    );
+
+    // Keep current page valid after deleting products
+    useEffect(() => {
+        setCurrentPage((page) => Math.min(page, totalPages));
+    }, [totalPages]);
+
+    const paginatedProducts = useMemo(() => {
+        const start = (currentPage - 1) * ITEMS_PER_PAGE;
+
+        return filteredProducts.slice(
+            start,
+            start + ITEMS_PER_PAGE
+        );
+    }, [filteredProducts, currentPage]);
+
     return (
-        <div className="p-6 max-w-6xl mx-auto text-gray-900 dark:text-gray-100">
-            {/* Header Bar */}
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold flex items-center gap-2">
-                    <Package className="text-[#10B981]" /> Admin Settings - Product Management
+        <div className="mx-auto max-w-6xl p-6 text-gray-900 dark:text-gray-100">
+            <Toaster position="top-right" reverseOrder={false} />
+
+            <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <h1 className="flex items-center gap-2 text-2xl font-bold">
+                    <Package className="text-[#10B981]" />
+                    Admin Settings - Product Management
                 </h1>
+
                 <button
-                    onClick={() => setShowAddCard(!showAddCard)}
-                    className="flex items-center gap-2 bg-[#10B981] hover:bg-[#0d9668] text-white px-4 py-2 rounded-lg font-medium transition shadow-md cursor-pointer"
+                    type="button"
+                    onClick={() => setShowAddCard((prev) => !prev)}
+                    className="flex items-center justify-center gap-2 rounded-lg bg-[#10B981] px-4 py-2 font-medium text-white shadow-md transition hover:bg-[#0d9668]"
                 >
-                    <Plus size={18} /> {showAddCard ? "Close Form" : "Add Product"}
+                    <Plus size={18} />
+                    {showAddCard ? "Close Form" : "Add Product"}
                 </button>
             </div>
 
-            {/* Part 1: Add Product Form Component */}
             {showAddCard && (
                 <AddProductCard
                     newProduct={newProduct}
@@ -122,9 +275,15 @@ export default function AdminSettings() {
                 />
             )}
 
-            {/* Part 2: Product Table & Edit/Remove Component */}
+            <ProductSearchFilter
+                searchQuery={searchQuery}
+                setSearchQuery={setSearchQuery}
+                selectedCategory={selectedCategory}
+                setSelectedCategory={setSelectedCategory}
+            />
+
             <ManageProductsTable
-                products={products}
+                products={paginatedProducts}
                 loading={loading}
                 editingId={editingId}
                 setEditingId={setEditingId}
@@ -132,6 +291,14 @@ export default function AdminSettings() {
                 setEditedPrice={setEditedPrice}
                 handleUpdatePrice={handleUpdatePrice}
                 handleDeleteProduct={handleDeleteProduct}
+            />
+
+            <ProductPagination
+                currentPage={currentPage}
+                setCurrentPage={setCurrentPage}
+                totalPages={totalPages}
+                totalResults={filteredProducts.length}
+                itemsPerPage={ITEMS_PER_PAGE}
             />
         </div>
     );

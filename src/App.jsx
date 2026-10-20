@@ -18,7 +18,10 @@ import Homepage from "./Components/Homepage"
 import ShopingPage from "./pages/shop/page";
 import ProductDetails from "./pages/shop/ProductDetails";
 import CheckoutPage from "./pages/shop/CheckoutPage";
-import TrackOrderPage from "./pages/order-track/page";
+import AdminUsersPage from "./pages/dashboard/users/page";
+import TrackOrderPage from "./pages/track-order/page";
+import NotFound from "./NotFound";
+import Cartpage from "./pages/cart/page";
 
 
 function Placeholder({ title }) {
@@ -36,6 +39,9 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
+          <Route path="*" element={<NotFound />} />
+
+
         {/* Public Routes */}
         <Route element={<MainLayout />}>
           <Route path="/" element={<Homepage />} />
@@ -43,10 +49,10 @@ export default function App() {
           <Route path="/shop/:id" element={<ProductDetails />} />
           <Route path="/checkout/:id" element={<CheckoutPage />} />
           <Route
-            path="/"
+            path="/track-order"
             element={<TrackOrderPage />}
           />
-          <Route path="/cart" element={<Placeholder title="Cart" />} />
+          <Route path="/cart" element={<Cartpage />} />
           <Route path="/wishlist" element={<Placeholder title="Wishlist" />} />
         </Route>
 
@@ -64,7 +70,6 @@ export default function App() {
           <Route path="settings" element={<Placeholder title="Settings" />} />
         </Route>
 
-        {/* Admin Dashboard */}
 
         {/* Admin Dashboard */}
         <Route path="/admin" element={<DashboardLayout role="admin" />}>
@@ -84,7 +89,7 @@ export default function App() {
 
           <Route
             path="users"
-            element={<Placeholder title="Manage Users" />}
+            element={<AdminUsersPage />}
           />
 
           <Route
@@ -96,6 +101,7 @@ export default function App() {
 
         <Route path="*" element={<Placeholder title="404 - Page Not Found" />} />
       </Routes>
+
     </BrowserRouter>
   );
 }

@@ -42,16 +42,7 @@ const Navbar = () => {
                 { title: "Discount Offers", desc: "Special sales up to 50% off", href: "/shop?sale=true" }
             ]
         },
-        {
-            name: "Categories",
-            href: "/shop",
-            dropdown: [
-                { title: "Electronics", desc: "Laptops, phones & audio gear", href: "/shop?category=electronics" },
-                { title: "Fashion", desc: "T-shirts, shoes & accessories", href: "/shop?category=fashion" },
-                { title: "Home & Living", desc: "Decor & daily lifestyle essentials", href: "/shop?category=home" },
-                { title: "Sports & Beauty", desc: "Fitness equipment & skincare", href: "/shop?category=sports" }
-            ]
-        },
+        
         { name: "Track Order", href: "/track-order" },
         { name: "About", href: "/about" },
         { name: "Contact", href: "/contact" },

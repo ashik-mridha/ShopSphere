@@ -1,83 +1,112 @@
 
-
 export default function AddProductCard({
     newProduct,
     setNewProduct,
     handleAddProduct,
     onClose,
 }) {
+    const updateField = (field, value) => {
+        setNewProduct((prev) => ({
+            ...prev,
+            [field]: value,
+        }));
+    };
+
+    const inputClass =
+        "w-full rounded-lg border border-[#22332a] bg-[#0d1411] px-3 py-2 text-sm text-white focus:border-[#10B981] focus:outline-none";
+
     return (
-        <div className="mb-8 p-6 bg-[#121614] border border-[#22332a] rounded-xl shadow-lg animate-in fade-in slide-in-from-top-2">
-            <h2 className="text-lg font-semibold mb-4 text-[#10B981]">Add New Product</h2>
-            <form onSubmit={handleAddProduct} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="mb-8 rounded-xl border border-[#22332a] bg-[#121614] p-6 shadow-lg">
+            <h2 className="mb-4 text-lg font-semibold text-[#10B981]">
+                Add New Product
+            </h2>
+
+            <form
+                onSubmit={handleAddProduct}
+                className="grid grid-cols-1 gap-4 md:grid-cols-2"
+            >
                 <div>
-                    <label className="block text-sm text-gray-400 mb-1">Product Title</label>
+                    <label className="mb-1 block text-sm text-gray-400">
+                        Product Title
+                    </label>
                     <input
                         type="text"
                         required
                         value={newProduct.title}
-                        onChange={(e) => setNewProduct({ ...newProduct, title: e.target.value })}
-                        className="w-full bg-[#0d1411] border border-[#22332a] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-[#10B981]"
-                        placeholder="e.g. Wireless Headphones"
+                        onChange={(e) => updateField("title", e.target.value)}
+                        className={inputClass}
+                        placeholder="Wireless Headphones"
                     />
                 </div>
 
                 <div>
-                    <label className="block text-sm text-gray-400 mb-1">Price ($)</label>
+                    <label className="mb-1 block text-sm text-gray-400">
+                        Price ($)
+                    </label>
                     <input
                         type="number"
+                        min="0"
+                        step="0.01"
                         required
                         value={newProduct.price}
-                        onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
-                        className="w-full bg-[#0d1411] border border-[#22332a] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-[#10B981]"
-                        placeholder="e.g. 99.99"
+                        onChange={(e) => updateField("price", e.target.value)}
+                        className={inputClass}
+                        placeholder="99.99"
                     />
                 </div>
 
                 <div>
-                    <label className="block text-sm text-gray-400 mb-1">Category</label>
+                    <label className="mb-1 block text-sm text-gray-400">
+                        Category
+                    </label>
                     <input
                         type="text"
+                        required
                         value={newProduct.category}
-                        onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })}
-                        className="w-full bg-[#0d1411] border border-[#22332a] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-[#10B981]"
-                        placeholder="e.g. Electronics"
+                        onChange={(e) => updateField("category", e.target.value)}
+                        className={inputClass}
+                        placeholder="Electronics"
                     />
                 </div>
 
                 <div>
-                    <label className="block text-sm text-gray-400 mb-1">Image URL</label>
+                    <label className="mb-1 block text-sm text-gray-400">
+                        Image URL
+                    </label>
                     <input
                         type="url"
                         value={newProduct.image}
-                        onChange={(e) => setNewProduct({ ...newProduct, image: e.target.value })}
-                        className="w-full bg-[#0d1411] border border-[#22332a] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-[#10B981]"
+                        onChange={(e) => updateField("image", e.target.value)}
+                        className={inputClass}
                         placeholder="https://example.com/image.jpg"
                     />
                 </div>
 
                 <div className="md:col-span-2">
-                    <label className="block text-sm text-gray-400 mb-1">Description</label>
+                    <label className="mb-1 block text-sm text-gray-400">
+                        Description
+                    </label>
                     <textarea
-                        rows="2"
+                        rows={3}
                         value={newProduct.description}
-                        onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })}
-                        className="w-full bg-[#0d1411] border border-[#22332a] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-[#10B981]"
+                        onChange={(e) => updateField("description", e.target.value)}
+                        className={inputClass}
                         placeholder="Product details..."
-                    ></textarea>
+                    />
                 </div>
 
-                <div className="md:col-span-2 flex justify-end gap-2 mt-2">
+                <div className="mt-2 flex justify-end gap-2 md:col-span-2">
                     <button
                         type="button"
                         onClick={onClose}
-                        className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm transition text-white"
+                        className="rounded-lg bg-gray-700 px-4 py-2 text-sm text-white hover:bg-gray-600"
                     >
                         Cancel
                     </button>
+
                     <button
                         type="submit"
-                        className="px-4 py-2 bg-[#10B981] hover:bg-[#0d9668] text-white rounded-lg text-sm font-medium transition"
+                        className="rounded-lg bg-[#10B981] px-4 py-2 text-sm font-medium text-white hover:bg-[#0d9668]"
                     >
                         Save Product
                     </button>

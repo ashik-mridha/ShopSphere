@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { ArrowRight, Sparkles, ShieldCheck, ChevronLeft, ChevronRight } from "lucide-react";
 
 const HeroBanner = () => {
-    // স্লাইড ডাটা
+    
     const slides = [
         {
             id: 1,

@@ -1,34 +1,58 @@
-
-import { Package, Heart, ShoppingBag, UserRound, ArrowRight } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Package, Heart, ShoppingBag, UserRound, ArrowRight, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
-
-const cards = [
-    {
-        title: "Total Orders",
-        value: "04",
-        icon: Package,
-        color: "bg-blue-100 text-blue-700",
-    },
-    {
-        title: "Wishlist Items",
-        value: "08",
-        icon: Heart,
-        color: "bg-pink-100 text-pink-700",
-    },
-    {
-        title: "Cart Items",
-        value: "03",
-        icon: ShoppingBag,
-        color: "bg-emerald-100 text-emerald-700",
-    },
-];
-
-const orders = [
-    { id: "#SS-1001", date: "Oct 12, 2026", amount: "$120", status: "Delivered" },
-    { id: "#SS-1005", date: "Oct 15, 2026", amount: "$85", status: "Processing" },
-];
+import { authClient } from "../../lib/auth-client"; // আপনার প্রজেক্টের সঠিক পাথ অনুযায়ী দিন
 
 export default function UserDashboard() {
+    const { data: session, isPending: sessionPending } = authClient.useSession();
+
+    const [orders, setOrders] = useState([]);
+    const [loadingOrders, setLoadingOrders] = useState(true);
+
+    const SERVER_URL = "http://localhost:5000";
+
+    // ব্যাকএন্ড থেকে ইউজারের অর্ডার বা ডাইনামিক ডাটা ফেচ করার জন্য
+    useEffect(() => {
+        const fetchUserOrders = async () => {
+            try {
+                setLoadingOrders(true);
+                const res = await fetch(`${SERVER_URL}/api/orders`);
+                if (res.ok) {
+                    const data = await res.json();
+                    setOrders(data);
+                }
+            } catch (err) {
+                console.error("Failed to fetch orders:", err);
+            } finally {
+                setLoadingOrders(false);
+            }
+        };
+
+        fetchUserOrders();
+    }, []);
+
+    
+    const cards = [
+        {
+            title: "Total Orders",
+            value: orders.length > 0 ? String(orders.length).padStart(2, "0") : "00",
+            icon: Package,
+            color: "bg-blue-100 text-blue-700",
+        },
+        {
+            title: "Wishlist Items",
+            value: "08", // ডাইনামিক উইশলিস্ট কাউন্ট এখানে বসাতে পারেন
+            icon: Heart,
+            color: "bg-pink-100 text-pink-700",
+        },
+        {
+            title: "Cart Items",
+            value: "03", // ডাইনামিক কার্ট কাউন্ট এখানে বসাতে পারেন
+            icon: ShoppingBag,
+            color: "bg-emerald-100 text-emerald-700",
+        },
+    ];
+
     return (
         <div className="space-y-8">
             <div>
@@ -38,21 +62,33 @@ export default function UserDashboard() {
                 </p>
             </div>
 
+            {/* Welcome Banner with Dynamic User Info */}
             <section className="rounded-2xl bg-emerald-900 p-6 text-white sm:p-8">
                 <div className="flex items-center gap-4">
-                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/15">
-                        <UserRound size={32} />
+                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/15 overflow-hidden">
+                        {session?.user?.image ? (
+                            <img
+                                src={session.user.image}
+                                alt="Profile"
+                                className="h-full w-full object-cover"
+                            />
+                        ) : (
+                            <UserRound size={32} />
+                        )}
                     </div>
                     <div>
                         <p className="text-sm text-emerald-100">Welcome back,</p>
-                        <h2 className="text-2xl font-bold">ShopSphere Customer</h2>
+                        <h2 className="text-2xl font-bold">
+                            {sessionPending ? "Loading..." : session?.user?.name || "ShopSphere Customer"}
+                        </h2>
                         <p className="mt-1 text-sm text-emerald-100">
-                            Thank you for shopping with us!
+                            {session?.user?.email || "Thank you for shopping with us!"}
                         </p>
                     </div>
                 </div>
             </section>
 
+            {/* Metric Cards */}
             <section className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
                 {cards.map(({ title, value, icon: Icon, color }) => (
                     <div
@@ -70,6 +106,7 @@ export default function UserDashboard() {
                 ))}
             </section>
 
+            {/* Recent Orders Section */}
             <section className="overflow-hidden rounded-2xl border border-gray-100 bg-white">
                 <div className="flex items-center justify-between border-b p-5 sm:p-6">
                     <div>
@@ -78,37 +115,51 @@ export default function UserDashboard() {
                     </div>
                     <Link
                         to="/user/orders"
-                        className="flex items-center gap-2 text-sm font-medium text-emerald-800"
+                        className="flex items-center gap-2 text-sm font-medium text-emerald-800 hover:underline"
                     >
                         View all <ArrowRight size={16} />
                     </Link>
                 </div>
 
                 <div className="overflow-x-auto">
-                    <table className="w-full min-w-[520px] text-left text-sm">
-                        <thead className="bg-gray-50 text-gray-500">
-                            <tr>
-                                <th className="px-6 py-4">Order ID</th>
-                                <th className="px-6 py-4">Date</th>
-                                <th className="px-6 py-4">Amount</th>
-                                <th className="px-6 py-4">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {orders.map((order) => (
-                                <tr key={order.id} className="border-t">
-                                    <td className="px-6 py-4 font-medium">{order.id}</td>
-                                    <td className="px-6 py-4">{order.date}</td>
-                                    <td className="px-6 py-4">{order.amount}</td>
-                                    <td className="px-6 py-4">
-                                        <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs text-emerald-700">
-                                            {order.status}
-                                        </span>
-                                    </td>
+                    {loadingOrders ? (
+                        <div className="flex items-center justify-center py-12">
+                            <Loader2 className="animate-spin text-emerald-600" size={28} />
+                        </div>
+                    ) : orders.length === 0 ? (
+                        <div className="py-12 text-center text-sm text-gray-500">
+                            No recent orders found.
+                        </div>
+                    ) : (
+                        <table className="w-full min-w-[520px] text-left text-sm">
+                            <thead className="bg-gray-50 text-gray-500">
+                                <tr>
+                                    <th className="px-6 py-4">Order ID</th>
+                                    <th className="px-6 py-4">Date</th>
+                                    <th className="px-6 py-4">Amount</th>
+                                    <th className="px-6 py-4">Status</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody className="divide-y divide-gray-100">
+                                {orders.map((order) => (
+                                    <tr key={order._id || order.id} className="hover:bg-gray-50/50">
+                                        <td className="px-6 py-4 font-medium">
+                                            #{order._id ? order._id.slice(-6).toUpperCase() : order.id}
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            {order.date ? order.date : new Date(order.createdAt).toLocaleDateString()}
+                                        </td>
+                                        <td className="px-6 py-4">${order.amount || order.totalPrice}</td>
+                                        <td className="px-6 py-4">
+                                            <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs text-emerald-700 font-medium">
+                                                {order.status || "Processing"}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    )}
                 </div>
             </section>
         </div>
