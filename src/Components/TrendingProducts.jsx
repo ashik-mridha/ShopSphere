@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Star, ShoppingCart, ArrowRight, Loader2 } from "lucide-react";
+import { Star, ShoppingCart, ArrowRight, Loader2, Eye } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const TrendingProducts = () => {
@@ -31,7 +31,7 @@ const TrendingProducts = () => {
                     throw new Error("Invalid products response from server");
                 }
 
-                // হোমপেজে দেখানোর জন্য প্রথম ৮টি প্রডাক্ট নেওয়া হলো
+                // হোমপেজে দেখানোর জন্য প্রথম ৮টি প্রডাক্ট নেওয়া হলো
                 setProducts(data.slice(0, 8));
             } catch (err) {
                 if (err.name !== "AbortError") {
@@ -93,67 +93,82 @@ const TrendingProducts = () => {
                 ) : (
                     /* Product Grid - Mobile e grid-cols-2 (পাসাপাশি ২টা) */
                     <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
-                        {products.map((product) => (
-                            <div
-                                key={product._id}
-                                className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-[#1f2924] bg-[#0d1411] p-2.5 sm:p-4 transition-all duration-300 hover:border-[#10B981]/50 hover:shadow-xl hover:shadow-[#10B981]/10"
-                            >
-                                {/* Product Image Box */}
-                                <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-[#15241d]/40 p-2 sm:p-4 flex items-center justify-center">
-                                    {product.image ? (
+                        {products.map((product) => {
+                            const productId = String(product._id ?? product.id ?? "");
 
-                                        <img
-                                            src={product.image}
-                                            alt={product.title || "Product image"}
-                                            className="h-48 w-full object-contain"
-                                            onError={(e) => {
-                                                e.currentTarget.onerror = null;
-                                                e.currentTarget.src = "/no-image.png";
-                                            }}
-                                        />
-
-                                    ) : (
-                                        <div className="flex h-full w-full items-center justify-center text-xs text-gray-600">
-                                            No Image
+                            return (
+                                <div
+                                    key={productId}
+                                    className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-[#1f2924] bg-[#0d1411] p-2.5 sm:p-4 transition-all duration-300 hover:border-[#10B981]/50 hover:shadow-xl hover:shadow-[#10B981]/10"
+                                >
+                                    <div>
+                                        {/* Product Image Box */}
+                                        <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-[#15241d]/40 p-2 sm:p-4 flex items-center justify-center">
+                                            {product.image ? (
+                                                <img
+                                                    src={product.image}
+                                                    alt={product.title || "Product image"}
+                                                    className="h-48 w-full object-contain"
+                                                    onError={(e) => {
+                                                        e.currentTarget.onerror = null;
+                                                        e.currentTarget.src = "/no-image.png";
+                                                    }}
+                                                />
+                                            ) : (
+                                                <div className="flex h-full w-full items-center justify-center text-xs text-gray-600">
+                                                    No Image
+                                                </div>
+                                            )}
                                         </div>
-                                    )}
-                                </div>
 
-                                {/* Product Details */}
-                                <div className="mt-2 sm:mt-4 flex flex-col gap-1">
-                                    <h3 className="text-xs sm:text-base font-bold text-white transition-colors duration-200 group-hover:text-[#10B981] truncate">
-                                        {product.title}
-                                    </h3>
+                                        {/* Product Details */}
+                                        <div className="mt-2 sm:mt-4 flex flex-col gap-1">
+                                            <h3 className="text-xs sm:text-base font-bold text-white transition-colors duration-200 group-hover:text-[#10B981] truncate">
+                                                {product.title}
+                                            </h3>
 
-                                    {/* Ratings (Static Default Rating for UI) */}
-                                    <div className="flex items-center gap-1 text-[10px] sm:text-xs">
-                                        <div className="flex items-center text-amber-400">
-                                            {[...Array(5)].map((_, i) => (
-                                                <Star key={i} size={11} fill="currentColor" className="sm:w-3.5 sm:h-3.5" />
-                                            ))}
+                                            {/* Ratings (Static Default Rating for UI) */}
+                                            <div className="flex items-center gap-1 text-[10px] sm:text-xs">
+                                                <div className="flex items-center text-amber-400">
+                                                    {[...Array(5)].map((_, i) => (
+                                                        <Star key={i} size={11} fill="currentColor" className="sm:w-3.5 sm:h-3.5" />
+                                                    ))}
+                                                </div>
+                                                <span className="font-semibold text-gray-300">{product.rating || "4.8"}</span>
+                                                <span className="text-gray-500 hidden sm:inline">({product.reviews || 24})</span>
+                                            </div>
                                         </div>
-                                        <span className="font-semibold text-gray-300">{product.rating || "4.8"}</span>
-                                        <span className="text-gray-500 hidden sm:inline">({product.reviews || 24})</span>
                                     </div>
 
-                                    {/* Price & Add to Cart Button */}
-                                    <div className="mt-1 sm:mt-2 flex items-center justify-between pt-1.5 sm:pt-2 border-t border-[#1f2924]/60">
-                                        <span className="text-xs sm:text-lg font-extrabold text-white">
-                                            ${Number(product.price ?? 0).toFixed(2)}
-                                        </span>
+                                    {/* Price & Action Buttons (Cart & Details) */}
+                                    <div className="mt-3 flex flex-col gap-2 pt-2 border-t border-[#1f2924]/60">
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-xs sm:text-lg font-extrabold text-white">
+                                                ${Number(product.price ?? 0).toFixed(2)}
+                                            </span>
 
-                                        <button
-                                            type="button"
-                                            onClick={() => alert(`Added ${product.title} to cart!`)}
-                                            aria-label={`Add ${product.title} to cart`}
-                                            className="flex h-7 w-7 sm:h-9 sm:w-9 items-center justify-center rounded-lg sm:rounded-xl bg-[#15241d] text-gray-200 border border-[#22332a] transition-all duration-200 hover:bg-[#10B981] hover:text-[#121614] hover:border-[#10B981] active:scale-90 cursor-pointer"
+                                            <button
+                                                type="button"
+                                                onClick={() => alert(`Added ${product.title} to cart!`)}
+                                                aria-label={`Add ${product.title} to cart`}
+                                                className="flex h-7 w-7 sm:h-9 sm:w-9 items-center justify-center rounded-lg sm:rounded-xl bg-[#15241d] text-gray-200 border border-[#22332a] transition-all duration-200 hover:bg-[#10B981] hover:text-[#121614] hover:border-[#10B981] active:scale-90 cursor-pointer"
+                                            >
+                                                <ShoppingCart size={13} className="sm:w-4 sm:h-4" />
+                                            </button>
+                                        </div>
+
+                                        {/* Details Button */}
+                                        <Link
+                                            to={`/shop/${encodeURIComponent(productId)}`}
+                                            className="w-full flex items-center justify-center gap-1.5 rounded-xl border border-[#22332a] bg-[#15241d]/50 py-2 text-xs font-semibold text-emerald-400 transition-all hover:bg-emerald-600 hover:text-white hover:border-emerald-600"
                                         >
-                                            <ShoppingCart size={13} className="sm:w-4 sm:h-4" />
-                                        </button>
+                                            <Eye size={14} />
+                                            <span>Details</span>
+                                        </Link>
                                     </div>
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 )}
 

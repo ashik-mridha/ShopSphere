@@ -5,7 +5,7 @@ const CartSummary = ({ subtotal }) => {
     const total = subtotal + shipping;
 
     return (
-        <div className="h-fit rounded-xl border p-5">
+        <div className="h-fit rounded-xl border border-gray-600 p-5">
             <h2 className="mb-4 text-xl font-bold">Order Summary</h2>
 
             <div className="space-y-3 text-sm">

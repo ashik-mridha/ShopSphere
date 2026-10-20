@@ -1,23 +1,19 @@
-import { useState } from "react";
-import {
-    Search,
-    ShoppingCart,
-    Heart,
-    CheckCircle,
-} from "lucide-react";
-import { Link } from "react-router-dom";
+import { useState, useMemo } from "react";
+import { Search } from "lucide-react";
 import useProducts from "../../hooks/useProducts";
-import ProgressiveImage from "../../components/ProgressiveImage";
+import ProductCard from "./ProductCard";
+import Pagination from "./Pagination";
 
 const CART_KEY = "shopsphere_cart";
+const ITEMS_PER_PAGE = 8;
 
 export default function ShopingPage() {
-    // useProducts হুক থেকে loading বা isLoading প্রপার্টি রিসিভ করা হচ্ছে
     const { products = [], loading, error } = useProducts();
 
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedCategory, setSelectedCategory] = useState("all");
     const [addedProductId, setAddedProductId] = useState(null);
+    const [currentPage, setCurrentPage] = useState(1);
 
     // Add product to cart
     const addToCart = (product) => {
@@ -76,27 +72,29 @@ export default function ShopingPage() {
         }
     };
 
-    // Search and category filtering (safe check with Array.isArray)
+    // Search and category filtering
     const query = searchQuery.trim().toLowerCase();
     const productList = Array.isArray(products) ? products : [];
 
-    const filteredProducts = productList.filter((item) => {
-        const category = String(item.category ?? "").toLowerCase();
+    const filteredProducts = useMemo(() => {
+        return productList.filter((item) => {
+            const category = String(item.category ?? "").toLowerCase();
 
-        const matchesCategory =
-            selectedCategory === "all" ||
-            category === selectedCategory;
+            const matchesCategory =
+                selectedCategory === "all" ||
+                category === selectedCategory;
 
-        const matchesSearch = [
-            item.title,
-            item.description,
-            item.category,
-        ].some((value) =>
-            String(value ?? "").toLowerCase().includes(query)
-        );
+            const matchesSearch = [
+                item.title,
+                item.description,
+                item.category,
+            ].some((value) =>
+                String(value ?? "").toLowerCase().includes(query)
+            );
 
-        return matchesCategory && matchesSearch;
-    });
+            return matchesCategory && matchesSearch;
+        });
+    }, [productList, selectedCategory, query]);
 
     // Dynamic categories
     const categories = [
@@ -109,6 +107,32 @@ export default function ShopingPage() {
                 .filter(Boolean)
         ),
     ];
+
+    // Pagination calculations
+    const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE) || 1;
+
+    const paginatedProducts = useMemo(() => {
+        const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+        return filteredProducts.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+    }, [filteredProducts, currentPage]);
+
+    // Handle Page Change
+    const handlePageChange = (newPage) => {
+        if (newPage >= 1 && newPage <= totalPages) {
+            setCurrentPage(newPage);
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+    };
+
+    const handleCategoryChange = (category) => {
+        setSelectedCategory(category);
+        setCurrentPage(1);
+    };
+
+    const handleSearchChange = (e) => {
+        setSearchQuery(e.target.value);
+        setCurrentPage(1);
+    };
 
     return (
         <main className="min-h-screen bg-[#0a0f0d] px-4 py-8 text-gray-100 sm:px-6 lg:px-12">
@@ -134,9 +158,7 @@ export default function ShopingPage() {
                         <input
                             type="search"
                             value={searchQuery}
-                            onChange={(event) =>
-                                setSearchQuery(event.target.value)
-                            }
+                            onChange={handleSearchChange}
                             placeholder="Search products..."
                             aria-label="Search products"
                             className="w-full rounded-xl border border-[#22332a] bg-[#121816] py-2.5 pl-10 pr-4 text-sm text-white placeholder-gray-500 transition focus:border-[#10B981] focus:outline-none"
@@ -150,7 +172,7 @@ export default function ShopingPage() {
                         <button
                             key={category}
                             type="button"
-                            onClick={() => setSelectedCategory(category)}
+                            onClick={() => handleCategoryChange(category)}
                             className={`cursor-pointer whitespace-nowrap rounded-xl px-4 py-2 text-sm font-medium capitalize transition ${selectedCategory === category
                                     ? "bg-[#10B981] text-white shadow-lg"
                                     : "border border-[#22332a] bg-[#121816] text-gray-400 hover:text-white"
@@ -196,6 +218,7 @@ export default function ShopingPage() {
                             onClick={() => {
                                 setSearchQuery("");
                                 setSelectedCategory("all");
+                                setCurrentPage(1);
                             }}
                             className="mt-4 rounded-lg bg-[#10B981] px-4 py-2 text-sm font-semibold text-white"
                         >
@@ -203,101 +226,25 @@ export default function ShopingPage() {
                         </button>
                     </div>
                 ) : (
-                    /* Product Grid */
-                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                        {filteredProducts.map((product) => {
-                            const id = String(
-                                product._id ?? product.id ?? ""
-                            );
+                    /* Product Grid & Pagination */
+                    <>
+                        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                            {paginatedProducts.map((product) => (
+                                <ProductCard
+                                    key={product._id ?? product.id}
+                                    product={product}
+                                    addedProductId={addedProductId}
+                                    addToCart={addToCart}
+                                />
+                            ))}
+                        </div>
 
-                            const isAdded = addedProductId === id;
-
-                            return (
-                                <article
-                                    key={id}
-                                    className="group flex flex-col justify-between overflow-hidden rounded-2xl border border-[#22332a] bg-[#121816] shadow-lg transition-all duration-300 hover:border-[#10B981]/60"
-                                >
-                                    <div>
-                                        {/* Product Image with Spinner */}
-                                        <div className="relative h-52 overflow-hidden bg-[#0d1411]">
-                                            <ProgressiveImage
-                                                src={product.image || ""}
-                                                alt={product.title || "Product image"}
-                                                imageClassName="h-full w-full object-contain p-4"
-                                            />
-
-                                            <button
-                                                type="button"
-                                                aria-label={`Add ${product.title || "product"
-                                                    } to wishlist`}
-                                                className="absolute right-3 top-3 rounded-full bg-black/60 p-2 text-gray-200 backdrop-blur-md transition hover:text-red-500"
-                                            >
-                                                <Heart size={18} />
-                                            </button>
-
-                                            {product.category && (
-                                                <span className="absolute bottom-3 left-3 rounded-md bg-black/60 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-[#10B981]">
-                                                    {product.category}
-                                                </span>
-                                            )}
-                                        </div>
-
-                                        {/* Product Information */}
-                                        <div className="p-4">
-                                            <h2 className="line-clamp-1 text-base font-semibold text-white transition-colors group-hover:text-[#10B981]">
-                                                {product.title || "Untitled Product"}
-                                            </h2>
-
-                                            <p className="mt-1 line-clamp-2 text-xs text-gray-400">
-                                                {product.description ||
-                                                    "No description provided for this item."}
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    {/* Price and Actions */}
-                                    <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-[#22332a]/50 p-4">
-                                        <div>
-                                            <span className="block text-xs text-gray-500">
-                                                Price
-                                            </span>
-
-                                            <span className="text-lg font-bold text-[#10B981]">
-                                                $
-                                                {Number(product.price ?? 0).toFixed(2)}
-                                            </span>
-                                        </div>
-
-                                        <div className="flex items-center gap-2">
-                                            <button
-                                                type="button"
-                                                onClick={() => addToCart(product)}
-                                                className={`flex cursor-pointer items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold text-white shadow-md transition ${isAdded
-                                                        ? "bg-emerald-700"
-                                                        : "bg-[#10B981] hover:bg-[#0d9668]"
-                                                    }`}
-                                            >
-                                                {isAdded ? (
-                                                    <CheckCircle size={15} />
-                                                ) : (
-                                                    <ShoppingCart size={15} />
-                                                )}
-
-                                                {isAdded ? "Added" : "Add"}
-                                            </button>
-
-                                            <Link
-                                                to={`/shop/${encodeURIComponent(id)}`}
-                                                className="rounded-xl border border-emerald-600 px-3 py-2 text-xs font-semibold text-emerald-400 transition hover:bg-emerald-600 hover:text-white"
-                                            >
-                                                Details
-                                            </Link>
-                                        </div>
-                                    </div>
-                                </article>
-                            );
-                        })}
-                    </div>
+                        <Pagination
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            onPageChange={handlePageChange}
+                        />
+                    </>
                 )}
             </div>
         </main>

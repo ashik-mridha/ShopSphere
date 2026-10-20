@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import  { useState, useEffect, useRef } from "react";
 import DesktopNavbar from "./DesktopNavbar";
 import MobileNavbar from "./MobileNavbar";
 import MobileBottomNav from "./MobileBottomNav";
@@ -36,11 +36,6 @@ const Navbar = () => {
         {
             name: "Shop",
             href: "/shop",
-            dropdown: [
-                { title: "All Products", desc: "Browse full product listing & filters", href: "/shop" },
-                { title: "Trending Items", desc: "Most popular choices this week", href: "/#trending" },
-                { title: "Discount Offers", desc: "Special sales up to 50% off", href: "/shop?sale=true" }
-            ]
         },
         
         { name: "Track Order", href: "/track-order" },

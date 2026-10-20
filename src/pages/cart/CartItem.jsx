@@ -2,7 +2,7 @@ import { Trash2, Minus, Plus } from "lucide-react";
 
 const CartItem = ({ item, onUpdate, onRemove }) => {
     return (
-        <div className="flex gap-4 rounded-xl border border-gray-200 p-4">
+        <div className="flex gap-4 rounded-xl border border-gray-600 p-4">
             <img
                 src={item.image}
                 alt={item.title || "Product image"}
