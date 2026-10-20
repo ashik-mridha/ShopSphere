@@ -1,33 +1,17 @@
 
-import { Search, Sun, Moon, LogIn, LogOut } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Search, Sun, Moon, LogIn } from "lucide-react";
+import { Link } from "react-router-dom";
 import { authClient } from "../lib/auth-client";
 
 const MobileNavbar = ({
     setIsSearchOpen,
     theme,
     toggleTheme,
-    isLoggedIn = false,
 }) => {
-    const navigate = useNavigate();
-
-    const handleLogout = async () => {
-        try {
-            const result = await authClient.signOut();
-
-            if (result?.error) {
-                console.error("Logout failed:", result.error.message);
-                return;
-            }
-
-            navigate("/login", { replace: true });
-        } catch (error) {
-            console.error("Logout failed:", error);
-        }
-    };
+    const { data: session, isPending } = authClient.useSession();
 
     return (
-        <div className="flex md:hidden items-center justify-between w-full h-full">
+        <div className="flex h-full w-full items-center justify-between md:hidden">
             {/* Logo */}
             <Link
                 to="/"
@@ -64,11 +48,14 @@ const MobileNavbar = ({
                 </span>
             </Link>
 
+            {/* Action Buttons */}
             <div className="flex items-center gap-2">
-                {/* Search Toggle */}
+                {/* Search */}
                 <button
                     type="button"
-                    onClick={() => setIsSearchOpen((previous) => !previous)}
+                    onClick={() =>
+                        setIsSearchOpen((previous) => !previous)
+                    }
                     aria-label="Search"
                     className="rounded-full p-2 text-gray-300 transition hover:bg-[#1a2922] hover:text-[#10B981]"
                 >
@@ -89,18 +76,8 @@ const MobileNavbar = ({
                     )}
                 </button>
 
-                {/* Login / Logout */}
-                {isLoggedIn ? (
-                    <button
-                        type="button"
-                        onClick={handleLogout}
-                        aria-label="Logout"
-                        title="Logout"
-                        className="rounded-full p-2 text-gray-300 transition hover:bg-red-500/10 hover:text-red-400"
-                    >
-                        <LogOut size={20} />
-                    </button>
-                ) : (
+                {/* Show Login only when logged out */}
+                {!isPending && !session && (
                     <Link
                         to="/login"
                         aria-label="Login"

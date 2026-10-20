@@ -47,13 +47,13 @@ export default function ManageProductsTable({
                                     <td className="p-4">
                                         {item.image ? (
                                             <img
-                                                src={item.image || "/images/product-placeholder.png"}
-                                                alt={item.title || "Product"}
+                                                src={item.image}
+                                                alt={item.title || "Product image"}
+                                                className="h-48 w-full object-contain"
                                                 onError={(e) => {
                                                     e.currentTarget.onerror = null;
-                                                    e.currentTarget.src = "/images/product-placeholder.png";
+                                                    e.currentTarget.src = "/no-image.png";
                                                 }}
-                                                className="h-full w-full object-contain"
                                             />
 
                                         ) : (

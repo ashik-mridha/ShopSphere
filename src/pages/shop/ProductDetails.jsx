@@ -99,8 +99,12 @@ export default function ProductDetails() {
                         {product.image ? (
                             <img
                                 src={product.image}
-                                alt={product.title}
-                                className="max-h-[480px] w-full object-contain"
+                                alt={product.title || "Product image"}
+                                className="h-48 w-full object-contain"
+                                onError={(e) => {
+                                    e.currentTarget.onerror = null;
+                                    e.currentTarget.src = "/no-image.png";
+                                }}
                             />
                         ) : (
                             <p className="text-gray-500">No image available</p>

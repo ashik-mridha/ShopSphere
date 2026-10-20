@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+
+import { Routes, Route, Navigate } from "react-router-dom";
 
 // Layouts
 import MainLayout from "./layouts/MainLayout";
@@ -12,17 +13,20 @@ import RegisterPage from "./auth/register/page";
 import AdminSettings from "./pages/dashboard/settings/page";
 import AdminDashboard from "./pages/dashboard/AdminDashboard";
 import UserDashboard from "./pages/dashboard/UserDashboard";
+import AdminUsersPage from "./pages/dashboard/users/page";
 
-// Homepage
-import Homepage from "./Components/Homepage"
+// Shop Pages
+import Homepage from "./Components/Homepage";
 import ShopingPage from "./pages/shop/page";
 import ProductDetails from "./pages/shop/ProductDetails";
 import CheckoutPage from "./pages/shop/CheckoutPage";
-import AdminUsersPage from "./pages/dashboard/users/page";
-import TrackOrderPage from "./pages/track-order/page";
-import NotFound from "./NotFound";
 import Cartpage from "./pages/cart/page";
+import TrackOrderPage from "./pages/track-order/page";
 
+// Other Components
+import NotFound from "./NotFound";
+import GlobalLoadingOverlay from "./Components/GlobalLoadingOverlay";
+import AboutPage from "./pages/about/page";
 
 function Placeholder({ title }) {
   return (
@@ -37,45 +41,96 @@ function Placeholder({ title }) {
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <>
+      {/* Global loading overlay সব route-এর উপরে থাকবে */}
+      <GlobalLoadingOverlay />
+
       <Routes>
-          <Route path="*" element={<NotFound />} />
-
-
         {/* Public Routes */}
         <Route element={<MainLayout />}>
           <Route path="/" element={<Homepage />} />
+
           <Route path="/shop" element={<ShopingPage />} />
-          <Route path="/shop/:id" element={<ProductDetails />} />
-          <Route path="/checkout/:id" element={<CheckoutPage />} />
+
+          <Route
+            path="/shop/:id"
+            element={<ProductDetails />}
+          />
+
+          <Route
+            path="/checkout/:id"
+            element={<CheckoutPage />}
+          />
+
           <Route
             path="/track-order"
             element={<TrackOrderPage />}
           />
+
           <Route path="/cart" element={<Cartpage />} />
-          <Route path="/wishlist" element={<Placeholder title="Wishlist" />} />
+          <Route path="/about" element={<AboutPage />} />
+
+          <Route
+            path="/wishlist"
+            element={<Placeholder title="Wishlist" />}
+          />
         </Route>
 
-        {/* Auth Routes (Navbar/Footer ছাড়া) */}
+        {/* Authentication Routes */}
         <Route path="/login" element={<LoginPage />} />
+
         <Route path="/register" element={<RegisterPage />} />
 
         {/* User Dashboard */}
-        <Route path="/user" element={<DashboardLayout role="user" />}>
-          <Route index element={<Navigate to="dashboard" replace />} />
-          <Route path="dashboard" element={<UserDashboard />} />
-          <Route path="orders" element={<Placeholder title="My Orders" />} />
-          <Route path="wishlist" element={<Placeholder title="My Wishlist" />} />
-          <Route path="profile" element={<Placeholder title="My Profile" />} />
-          <Route path="settings" element={<Placeholder title="Settings" />} />
+        <Route
+          path="/user"
+          element={<DashboardLayout role="user" />}
+        >
+          <Route
+            index
+            element={<Navigate to="dashboard" replace />}
+          />
+
+          <Route
+            path="dashboard"
+            element={<UserDashboard />}
+          />
+
+          <Route
+            path="orders"
+            element={<Placeholder title="My Orders" />}
+          />
+
+          <Route
+            path="wishlist"
+            element={<Placeholder title="My Wishlist" />}
+          />
+
+          <Route
+            path="profile"
+            element={<Placeholder title="My Profile" />}
+          />
+
+          <Route
+            path="settings"
+            element={<Placeholder title="Settings" />}
+          />
         </Route>
 
-
         {/* Admin Dashboard */}
-        <Route path="/admin" element={<DashboardLayout role="admin" />}>
-          <Route index element={<Navigate to="dashboard" replace />} />
+        <Route
+          path="/admin"
+          element={<DashboardLayout role="admin" />}
+        >
+          <Route
+            index
+            element={<Navigate to="dashboard" replace />}
+          />
 
-          <Route path="dashboard" element={<AdminDashboard />} />
+          <Route
+            path="dashboard"
+            element={<AdminDashboard />}
+          />
 
           <Route
             path="products"
@@ -98,10 +153,9 @@ export default function App() {
           />
         </Route>
 
-
-        <Route path="*" element={<Placeholder title="404 - Page Not Found" />} />
+        {/* 404: অবশ্যই সব route-এর শেষে */}
+        <Route path="*" element={<NotFound />} />
       </Routes>
-
-    </BrowserRouter>
+    </>
   );
 }
